@@ -1,0 +1,3 @@
+This shiny application showing various summaries of the surveillance data collected at KEELPNO. 
+
+The actual data are obviously confidential and not uploaded here. Script makeData.R anonymizes and converts the data into an R workspace file (/shiny/data/alldata.R).
