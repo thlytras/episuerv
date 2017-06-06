@@ -1,7 +1,7 @@
 source("include.R")
 
 library(shiny)
-#library(WriteXLS)
+library(WriteXLS)
 
 lang <- "GR"
 
@@ -70,7 +70,9 @@ server <- shinyServer(function(input, output, session) {
                   style="display: block; margin-left: auto; margin-right: auto;")
             ),
             mainPanel(
-              plotOutput("plotTDistYM")
+              plotOutput("plotTDistYM"),
+              br(),
+              downloadButton("downloadTDistYM", "Download")
             )
           )
         ),
@@ -98,7 +100,9 @@ server <- shinyServer(function(input, output, session) {
                   style="display: block; margin-left: auto; margin-right: auto;")
             ),
             mainPanel(
-              plotOutput("plotTDistY")
+              plotOutput("plotTDistY"),
+              br(),
+              downloadButton("downloadTDistY", "Download")
             )
           )
         ),
@@ -122,14 +126,15 @@ server <- shinyServer(function(input, output, session) {
                   style="display: block; margin-left: auto; margin-right: auto;")
             ),
             mainPanel(
-              plotOutput("plotGeoDist")
+              plotOutput("plotGeoDist"),
+              br(),
+              downloadButton("downloadGeoDist", "Download")
             )
           )
         )
         
       )
     )
-    # do.call(navlistPanel, c(mytabs, id="mytbp"))
     do.call(navbarPage, c(mytabs, id="mytbp"))
   })
   
@@ -188,11 +193,45 @@ server <- shinyServer(function(input, output, session) {
     if (exists("input") && ("lang" %in% names(input))) lang <- input$lang
     a <- as.integer(input$tDistRangeGeo)
     if (length(a>0)) {
-      print(sprintf("%s - %s - %s", a[1], a[2], input$disease2Geo))
       mapPlotY(input$disease2Geo, from=a[1], to=a[2], lang=lang)
     }
   })
 
+  output$downloadTDistYM <- downloadHandler(
+    filename = function() { 
+      "downloaded_data.xls"
+    },
+    content = function(file) {
+      a <- as.integer(format(input$tDistRangeYM, "%Y%m"))
+      grp <- input$groupedBy1YM; if (grp=="none") grp <- NA
+      out <- barPlotYM(input$disease1YM, from=a[1], to=a[2], groupBy=grp, plot=FALSE)
+      WriteXLS("out", file, "data", row.names=TRUE)
+    }
+  )
+
+  output$downloadTDistY <- downloadHandler(
+    filename = function() { 
+      "downloaded_data.xls"
+    },
+    content = function(file) {
+      a <- as.integer(input$tDistRangeY)
+      grp <- input$groupedBy1Y; if (grp=="none") grp <- NA
+      out <- barPlotY(input$disease1Y, from=a[1], to=a[2], groupBy=grp, plot=FALSE)
+      WriteXLS("out", file, "data", row.names=TRUE)
+    }
+  )
+  
+  output$downloadGeoDist <- downloadHandler(
+    filename = function() { 
+      "downloaded_data.xls"
+    },
+    content = function(file) {
+      a <- as.integer(input$tDistRangeGeo)
+      out <- mapPlotY(input$disease2Geo, from=a[1], to=a[2], plot=FALSE)
+      WriteXLS("out", file, "data")
+    }
+  )
+  
 
 #   output$ui_syndromes <- renderUI({
 #     if (exists("input") && ("lang" %in% names(input))) lang <- input$lang
