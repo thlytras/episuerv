@@ -11,10 +11,10 @@ names(diseases[["EN"]]) <- diseaseNames[["EN"]]
 names(diseases[["GR"]]) <- diseaseNames[["GR"]]
 
 
-groupings <- c("none", "gender", "agegrp", "anosokf")
+groupings <- c("none", "gender", "agegrp", "ethnikof", "anosokf", "entopisf")
 groupingNames <- list(
-    EN=c("None", "Gender", "Age group", "Immunosuppression"),
-    GR=c("Ουδέν", "Φύλο", "Ηλικιακή ομάδα", "Ανοσοκαταστολή"))
+    EN=c("None", "Gender", "Age group", "Nationality", "Immunosuppression", "Location"),
+    GR=c("Ουδέν", "Φύλο", "Ηλικιακή ομάδα", "Εθνικότητα", "Ανοσοκαταστολή", "Εντόπιση"))
 names(groupingNames[["EN"]]) <- groupings
 names(groupingNames[["GR"]]) <- groupings
 groupings <- list(EN=groupings, GR=groupings)
@@ -28,18 +28,26 @@ groupingLevels <- list(
     GR = c("Άνδρες", "Γυναίκες")
   ),
   "agegrp" = list(
-    EN = c("0-14", "15-44", "45-64", ">=65"),
-    GR = c("0-14", "15-44", "45-64", ">=65")
+    EN = c("0-14", "15-44", "45-64", ">=65", "Unknown"),
+    GR = c("0-14", "15-44", "45-64", ">=65", "Άγνωστο")
+  ),
+  "ethnikof" = list(
+    EN = c("Greek", "Foreign", "Unknown"),
+    GR = c("Έλληνες", "Αλλοδαποί", "Αγνωστο")
   ),
   "anosokf" = list(
     EN = c("No immunosuppression", "Immunosuppression", "HIV", "Unknown"),
     GR = c("Όχι ανοσοκαταστολή", "Ανοσοκαταστολή", "HIV", "Άγνωστο")
+  ),
+  "entopisf" = list(
+    EN = c("Pulmonary", "Extrapulmonary", "Both", "Unknown location"),
+    GR = c("Πνευμονική", "Εξωπνευμονική", "Και τα δύο", "Άγνωστη εντόπιση")
   )
 )
 
 
 availableGroupings <- list(
-  tb = c("none", "gender", "agegrp", "anosokf")
+  tb = c("none", "gender", "agegrp", "ethnikof", "anosokf", "entopisf")
 )
 
 
@@ -52,6 +60,9 @@ dat[["tb"]] <- merge(
   by="aa")
 
 for(x in names(dat)) {
+  dat[[x]]$eponymo.x <- NULL
+  dat[[x]]$onoma.x <- NULL
+
   dat[[x]]$yeardil <- as.integer(format(dat[[x]]$hmedil, "%Y"))
   dat[[x]]$monthdil <- as.integer(format(dat[[x]]$hmedil, "%m"))
   dat[[x]]$ymdil <- as.integer(format(dat[[x]]$hmedil, "%Y%m"))
