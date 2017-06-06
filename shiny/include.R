@@ -111,3 +111,51 @@ mapPlotY <- function(disease, from=2004, to=as.integer(format(Sys.Date(), "%Y"))
   }
   return(cbind(map_perif@data[,c("grename","engname")], incidence=c(inc)))
 }
+
+
+
+incPlotY <- function(disease, from=2004, to=as.integer(format(Sys.Date(), "%Y")), 
+        region=NA, lang="GR", plot=TRUE,
+        col=c(brewer.pal(12,"Set3"), brewer.pal(9,"Set1"))[1:14]) {
+  from <- max(2004, from)
+  to <- min(as.integer(format(Sys.Date(), "%Y")), to)
+  ticks <- from:to
+  tickLab <- ticks
+  s <- subset(dat[[disease]], yeardil>=from & yeardil<=to)
+  s$perif <- map_nomoi$esye_perif[match(toupper(s$nomokat), map_nomoi$esye)]
+  if (is.na(region[1])) {
+    tb <- table(factor(s$yeardil, levels=ticks))
+    tb <- as.matrix(tb / sum(map_perif$pop) * 100000)
+    # plot it
+  } else {
+    tb <- table(factor(s$yeardil, levels=ticks), s$perif)[,region, drop=FALSE]
+    tb <- t(t(tb) / map_perif$pop[match(colnames(tb), map_perif$esye_perif)])
+    tb <- tb*100000
+    layout(matrix(1:2,nrow=1), widths=c(2,1))
+  }
+  if (plot) {
+    plot(0, type="n", xlim=c(1,nrow(tb)), ylim=c(0, max(tb)), bty="l", 
+      xaxt="n", xlab=NA,
+      ylab=c(EN="Cases per 100.000 population per year", GR="Κρούσματα ανά 100.000 πληθυσμού κατ' έτος")[lang])
+    axis(1, at=1:nrow(tb), labels=rownames(tb), las=2)
+    mtext(c(EN="Year", GR="Έτος")[lang], side=1, line=3.2)
+    for (i in 1:ncol(tb)) {
+      points(tb[,i], col=col[i], type="o", lwd=3)
+    }
+    if (ncol(tb)>1 || !is.null(colnames(tb))) {
+      par(mar=c(0,0,0,0))
+      plot(0, type="n", axes=F, xlab=NA, ylab=NA)
+      par(xpd=TRUE)
+      lgnd <- as.character(list(
+        EN=map_perif$engname[match(as.character(colnames(tb)), map_perif$esye_perif)],
+        GR=map_perif$grename[match(as.character(colnames(tb)), map_perif$esye_perif)])[[lang]])
+      legend("left", legend=lgnd, col=col[1:ncol(tb)], lwd=3, bty="n")
+    }
+  }
+  if (is.null(colnames(tb)[1])) {
+    colnames(tb)[1] <- c(EN="Whole Country", GR="Σύνολο χώρας")[lang]
+  } else {
+    colnames(tb) <- lgnd
+  }
+  return(as.data.frame.matrix(tb))
+}

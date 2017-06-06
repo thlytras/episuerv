@@ -116,6 +116,36 @@ server <- shinyServer(function(input, output, session) {
         ),
 
         tabPanel(
+          c(  EN="Incidence by year",
+              GR="Επίπτωση κατ'έτος")[lang],
+          sidebarLayout(
+            sidebarPanel(
+              selectInput("disease2Y",
+                          c(EN="Disease:", GR="Νόσημα:")[lang],
+                          choices = diseases[[lang]],
+                          selected = "tb"),
+              sliderInput("tDistRange2Y",
+                          c(EN="Year(s)", GR="Έτος/-η:")[lang],
+                          min = 2004,
+                          max = as.integer(format(curyear3,"%Y")),
+                          value = as.integer(format(curyear2,"%Y"))[1] + c(-5,0),
+                          ticks=FALSE, step=1, sep=""),
+              selectInput("region2Y",
+                          c(EN="Geographical region:", GR="Γεωγραφική περιοχή:")[lang], 
+                          choices = regions[[lang]][-1],
+                          selected = NULL, multiple=TRUE),
+              img(src='keelpno.png', width=199, height=157,
+                  style="display: block; margin-left: auto; margin-right: auto;")
+            ),
+            mainPanel(
+              plotOutput("plotTDist2Y"),
+              br(),
+              downloadButton("downloadTDist2Y", "Download")
+            )
+          )
+        ),
+        
+        tabPanel(
           c(  EN="Geographical distribution",
               GR="Γεωγραφική κατανομή")[lang],
           sidebarLayout(
@@ -198,6 +228,15 @@ server <- shinyServer(function(input, output, session) {
       barPlotY(input$disease1Y, from=a[1], to=a[2], groupBy=grp, region=r, lang=lang)
     }
   })
+
+  output$plotTDist2Y <- renderPlot({
+    if (exists("input") && ("lang" %in% names(input))) lang <- input$lang
+    a <- as.integer(input$tDistRange2Y)
+    r <- input$region2Y; r[is.null(r)] <- NA
+    if (length(a>0)) {
+      incPlotY(input$disease2Y, from=a[1], to=a[2], region=r, lang=lang)
+    }
+  })
   
   output$plotGeoDist <- renderPlot({
     if (exists("input") && ("lang" %in% names(input))) lang <- input$lang
@@ -212,10 +251,11 @@ server <- shinyServer(function(input, output, session) {
       "downloaded_data.xls"
     },
     content = function(file) {
+      if (exists("input") && ("lang" %in% names(input))) lang <- input$lang
       a <- as.integer(format(input$tDistRangeYM, "%Y%m"))
       r <- input$region1YM; r[r=="NA"] <- NA
       grp <- input$groupedBy1YM; if (grp=="none") grp <- NA
-      out <- barPlotYM(input$disease1YM, from=a[1], to=a[2], groupBy=grp, region=r, plot=FALSE)
+      out <- barPlotYM(input$disease1YM, from=a[1], to=a[2], groupBy=grp, region=r, plot=FALSE, lang=lang)
       WriteXLS("out", file, "data", row.names=TRUE)
     }
   )
@@ -225,10 +265,24 @@ server <- shinyServer(function(input, output, session) {
       "downloaded_data.xls"
     },
     content = function(file) {
+      if (exists("input") && ("lang" %in% names(input))) lang <- input$lang
       a <- as.integer(input$tDistRangeY)
       r <- input$region1Y; r[r=="NA"] <- NA
       grp <- input$groupedBy1Y; if (grp=="none") grp <- NA
-      out <- barPlotY(input$disease1Y, from=a[1], to=a[2], groupBy=grp, region=r, plot=FALSE)
+      out <- barPlotY(input$disease1Y, from=a[1], to=a[2], groupBy=grp, region=r, plot=FALSE, lang=lang)
+      WriteXLS("out", file, "data", row.names=TRUE)
+    }
+  )
+  
+  output$downloadTDist2Y <- downloadHandler(
+    filename = function() { 
+      "downloaded_data.xls"
+    },
+    content = function(file) {
+      if (exists("input") && ("lang" %in% names(input))) lang <- input$lang
+      a <- as.integer(input$tDistRange2Y)
+      r <- input$region2Y; r[is.null(r)] <- NA
+      out <- incPlotY(input$disease2Y, from=a[1], to=a[2], region=r, plot=FALSE, lang=lang)
       WriteXLS("out", file, "data", row.names=TRUE)
     }
   )
@@ -238,8 +292,9 @@ server <- shinyServer(function(input, output, session) {
       "downloaded_data.xls"
     },
     content = function(file) {
+      if (exists("input") && ("lang" %in% names(input))) lang <- input$lang
       a <- as.integer(input$tDistRangeGeo)
-      out <- mapPlotY(input$disease2Geo, from=a[1], to=a[2], plot=FALSE)
+      out <- mapPlotY(input$disease2Geo, from=a[1], to=a[2], plot=FALSE, lang=lang)
       WriteXLS("out", file, "data")
     }
   )
