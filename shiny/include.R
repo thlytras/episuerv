@@ -5,8 +5,20 @@ load("data/map_nomoi.RData")
 library(RColorBrewer)
 library(sp)
 
+
+regions <- c(NA, as.character(map_perif@data$esye_perif))
+regionsNames <- list(
+    EN=c("Whole country", as.character(map_perif@data$engname)),
+    GR=c("Σύνολο χώρας", as.character(map_perif@data$grename)))
+names(regionsNames[["EN"]]) <- regions
+names(regionsNames[["GR"]]) <- regions
+regions <- list(EN=regions, GR=regions)
+names(regions[["EN"]]) <- regionsNames[["EN"]]
+names(regions[["GR"]]) <- regionsNames[["GR"]]
+
+
 barPlotYM <- function(disease, from=200401, to=as.integer(format(Sys.Date(), "%Y%m")), 
-        groupBy=NA, grouptitle=NA, lang="GR", plot=TRUE,
+        groupBy=NA, grouptitle=NA, region=NA, lang="GR", plot=TRUE,
         col=brewer.pal(8,"Set2"), border=brewer.pal(8,"Dark2")) {
   from <- max(200401, from)
   to <- min(as.integer(format(Sys.Date(), "%Y%m")), to)
@@ -23,26 +35,27 @@ barPlotYM <- function(disease, from=200401, to=as.integer(format(Sys.Date(), "%Y
     tickLab[!((tickLab %% 100) %in% c(1,7))] <- NA
   }
   s <- subset(dat[[disease]], ymdil>=from & ymdil<=to)
-  return(barPlotTDIST(disease, s, "ymdil", ticks, tickLab, groupBy, grouptitle, lang, plot, col, border))
+  return(barPlotTDIST(disease, s, "ymdil", ticks, tickLab, groupBy, grouptitle, region, lang, plot, col, border))
 }
 
 
 barPlotY <- function(disease, from=2004, to=as.integer(format(Sys.Date(), "%Y")), 
-        groupBy=NA, grouptitle=NA, lang="GR", plot=TRUE,
+        groupBy=NA, grouptitle=NA, region=NA, lang="GR", plot=TRUE,
         col=brewer.pal(8,"Set2"), border=brewer.pal(8,"Dark2")) {
   from <- max(2004, from)
   to <- min(as.integer(format(Sys.Date(), "%Y")), to)
   ticks <- from:to
   tickLab <- ticks
   s <- subset(dat[[disease]], yeardil>=from & yeardil<=to)
-  return(barPlotTDIST(disease, s, "yeardil", ticks, tickLab, groupBy, grouptitle, lang, plot, col, border))
+  return(barPlotTDIST(disease, s, "yeardil", ticks, tickLab, groupBy, grouptitle, region, lang, plot, col, border))
 }
 
 
 barPlotTDIST <- function(disease, s, g, ticks, tickLab,
-        groupBy=NA, grouptitle=NA, lang="GR", plot=TRUE,
+        groupBy=NA, grouptitle=NA, region=NA, lang="GR", plot=TRUE,
         col=brewer.pal(8,"Set2"), border=brewer.pal(8,"Dark2")) {
   if (!(groupBy %in% names(s))) groupBy <- NA
+  if (!is.na(region)) s <- s[which(as.character(map_nomoi$esye_perif[match(toupper(s$nomokat), map_nomoi$esye)])==region),]
   if (is.na(groupBy)) {
     tb <- table(factor(s[[g]], levels=ticks))
     if (plot) {

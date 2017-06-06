@@ -66,6 +66,10 @@ server <- shinyServer(function(input, output, session) {
                           c(EN="Group by:", GR="Ομαδοποίηση κατά:")[lang], 
                           choices = groupings[[lang]][groupings[[lang]] %in% availableGroupings[[curdisYM]]],
                           selected = "none"),
+              selectInput("region1YM",
+                          c(EN="Geographical region:", GR="Γεωγραφική περιοχή:")[lang], 
+                          choices = regions[[lang]],
+                          selected = NA),
               img(src='keelpno.png', width=199, height=157, 
                   style="display: block; margin-left: auto; margin-right: auto;")
             ),
@@ -96,6 +100,10 @@ server <- shinyServer(function(input, output, session) {
                           c(EN="Group by:", GR="Ομαδοποίηση κατά:")[lang], 
                           choices = groupings[[lang]][groupings[[lang]] %in% availableGroupings[[curdisY]]],
                           selected = "none"),
+              selectInput("region1Y",
+                          c(EN="Geographical region:", GR="Γεωγραφική περιοχή:")[lang], 
+                          choices = regions[[lang]],
+                          selected = NA),
               img(src='keelpno.png', width=199, height=157,
                   style="display: block; margin-left: auto; margin-right: auto;")
             ),
@@ -174,18 +182,20 @@ server <- shinyServer(function(input, output, session) {
   output$plotTDistYM <- renderPlot({
     if (exists("input") && ("lang" %in% names(input))) lang <- input$lang
     a <- as.integer(format(input$tDistRangeYM, "%Y%m"))
+    r <- input$region1YM; r[r=="NA"] <- NA
     if (length(a>0)) {
       grp <- input$groupedBy1YM; if (grp=="none") grp <- NA
-      barPlotYM(input$disease1YM, from=a[1], to=a[2], groupBy=grp, lang=lang)
+      barPlotYM(input$disease1YM, from=a[1], to=a[2], groupBy=grp, region=r, lang=lang)
     }
   })
   
   output$plotTDistY <- renderPlot({
     if (exists("input") && ("lang" %in% names(input))) lang <- input$lang
     a <- as.integer(input$tDistRangeY)
+    r <- input$region1Y; r[r=="NA"] <- NA
     if (length(a>0)) {
       grp <- input$groupedBy1Y; if (grp=="none") grp <- NA
-      barPlotY(input$disease1Y, from=a[1], to=a[2], groupBy=grp, lang=lang)
+      barPlotY(input$disease1Y, from=a[1], to=a[2], groupBy=grp, region=r, lang=lang)
     }
   })
   
@@ -203,8 +213,9 @@ server <- shinyServer(function(input, output, session) {
     },
     content = function(file) {
       a <- as.integer(format(input$tDistRangeYM, "%Y%m"))
+      r <- input$region1YM; r[r=="NA"] <- NA
       grp <- input$groupedBy1YM; if (grp=="none") grp <- NA
-      out <- barPlotYM(input$disease1YM, from=a[1], to=a[2], groupBy=grp, plot=FALSE)
+      out <- barPlotYM(input$disease1YM, from=a[1], to=a[2], groupBy=grp, region=r, plot=FALSE)
       WriteXLS("out", file, "data", row.names=TRUE)
     }
   )
@@ -215,8 +226,9 @@ server <- shinyServer(function(input, output, session) {
     },
     content = function(file) {
       a <- as.integer(input$tDistRangeY)
+      r <- input$region1Y; r[r=="NA"] <- NA
       grp <- input$groupedBy1Y; if (grp=="none") grp <- NA
-      out <- barPlotY(input$disease1Y, from=a[1], to=a[2], groupBy=grp, plot=FALSE)
+      out <- barPlotY(input$disease1Y, from=a[1], to=a[2], groupBy=grp, region=r, plot=FALSE)
       WriteXLS("out", file, "data", row.names=TRUE)
     }
   )
