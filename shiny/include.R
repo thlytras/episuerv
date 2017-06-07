@@ -116,7 +116,7 @@ mapPlotY <- function(disease, from=2004, to=as.integer(format(Sys.Date(), "%Y"))
 
 incPlotY <- function(disease, from=2004, to=as.integer(format(Sys.Date(), "%Y")), 
         region=NA, lang="GR", plot=TRUE,
-        col=c(brewer.pal(12,"Set3"), brewer.pal(9,"Set1"))[1:14]) {
+        col=c(brewer.pal(9,"Set1"), brewer.pal(8,"Dark2")[c(1,2,4,6,8)])) {
   from <- max(2004, from)
   to <- min(as.integer(format(Sys.Date(), "%Y")), to)
   ticks <- from:to
